@@ -1,4 +1,4 @@
-# A backend Project with Express , MongoDB, React
+# A backend Project with Express , MongoDB
 
 > 🚧 Ongoing Project — actively under development. Features and APIs may change frequently.
 
