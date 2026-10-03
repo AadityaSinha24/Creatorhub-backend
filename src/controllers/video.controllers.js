@@ -10,6 +10,15 @@ import {uploadOnCloudinary} from "../utils/cloudinary.js"
 const getAllVideos = asyncHandler(async (req, res) => {
     const { page = 1, limit = 10, query, sortBy, sortType, userId } = req.query
     //TODO: get all videos based on query, sort, pagination
+    try {
+        if(!query){ 
+            return res.status(401).json(
+                new ApiResponse(401,"Please enter a valid query")
+        )}
+    } catch (error) {
+        
+        
+    }
 })
 
 const publishAVideo = asyncHandler(async (req, res) => {
