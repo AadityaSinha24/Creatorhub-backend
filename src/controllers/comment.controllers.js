@@ -75,6 +75,45 @@ const addComment = asyncHandler(async (req, res) => {
 
 const updateComment = asyncHandler(async (req, res) => {
     // TODO: update a comment
+
+    const { commentId } = req.params
+    const { content } = req.body
+
+    if (!mongoose.Types.ObjectId.isValid(commentId)) {
+        throw new ApiError(400, "Invalid comment ID")
+    }
+
+    if (!content?.trim()) {
+        throw new ApiError(400, "Comment content is required")
+    }
+
+    const comment = await Comment.findOneAndUpdate(
+        {
+            _id: commentId,
+            owner: req.user._id
+        },
+        {
+            $set: {
+                content: content.trim()
+            }
+        },
+        {
+            new: true,
+            runValidators: true
+        }
+    ).populate("owner", "username fullName avatar")
+
+    if (!comment) {
+        throw new ApiError(404, "Comment not found or unauthorized")
+    }
+
+    return res.status(200).json(
+        new ApiResponse(
+            200,
+            comment,
+            "Comment updated successfully"
+        )
+    )
 })
 
 const deleteComment = asyncHandler(async (req, res) => {
