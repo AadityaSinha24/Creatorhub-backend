@@ -9,6 +9,47 @@ import {asyncHandler} from "../utils/asyncHandler.js"
 const toggleSubscription = asyncHandler(async (req, res) => {
     const {channelId} = req.params
     // TODO: toggle subscription
+    // Check whether channelId is a valid MongoDB ObjectId
+    if (!isValidObjectId(channelId)) {
+        throw new ApiError(400, "Invalid channel ID")
+    }
+
+    // Prevent users from subscribing to themselves
+    if (subscriberId.toString() === channelId) {
+        throw new ApiError(400, "You cannot subscribe to yourself")
+    }
+
+    // Check whether the channel exists
+    const channel = await User.findById(channelId)
+
+    if (!channel) {
+        throw new ApiError(404, "Channel does not exist")
+    }
+
+    // Check whether subscription already exists
+    const existingSubscription = await Subscription.findOne({
+        subscriber: subscriberId,
+        channel: channelId
+    })
+
+    if (existingSubscription) {
+        // Unsubscribe
+        await Subscription.findByIdAndDelete(existingSubscription._id)
+
+        return res.status(200).json(
+            new ApiResponse(200, {}, "Unsubscribed successfully")
+        )
+    }
+
+    // Subscribe
+    await Subscription.create({
+        subscriber: subscriberId,
+        channel: channelId
+    })
+
+    return res.status(200).json(
+        new ApiResponse(200, {}, "Subscribed successfully")
+    )
 })
 
 // controller to return subscriber list of a channel
