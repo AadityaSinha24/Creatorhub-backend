@@ -50,9 +50,48 @@ const getUserTweets = asyncHandler(async (req, res) => {
     )
 })
 
+
 const updateTweet = asyncHandler(async (req, res) => {
-    //TODO: update tweet
+    const { tweetId } = req.params
+    const { content } = req.body
+
+    if (!isValidObjectId(tweetId)) {
+        throw new ApiError(400, "Invalid tweet ID")
+    }
+
+    if (!content || !content.trim()) {
+        throw new ApiError(400, "Tweet content is required")
+    }
+
+    const tweet = await Tweet.findById(tweetId)
+
+    if (!tweet) {
+        throw new ApiError(404, "Tweet does not exist")
+    }
+
+    // Check whether the logged-in user owns this tweet
+    if (tweet.owner.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, "You are not authorized to update this tweet")
+    }
+
+    const updatedTweet = await Tweet.findByIdAndUpdate(
+        tweetId,
+        {
+            $set: {
+                content: content.trim()
+            }
+        },
+        {
+            new: true,
+            runValidators: true
+        }
+    )
+
+    return res.status(200).json(
+        new ApiResponse(200, updatedTweet, "Tweet updated successfully")
+    )
 })
+
 
 const deleteTweet = asyncHandler(async (req, res) => {
     //TODO: delete tweet
